@@ -63,8 +63,10 @@ class UserProfileView(APIView):
     def patch(self, request):
         serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
+            print("DATA A GUARDAR:", serializer.validated_data)  # 👈 IMPRIMIR LO QUE SE VA A GUARDAR
             serializer.save()
             return Response(serializer.data)
+        print("ERRORES:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def delete(self, request):
         user = request.user

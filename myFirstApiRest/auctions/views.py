@@ -16,7 +16,10 @@ from .permisions import IsOwnerOrAdmin, IsBidOwnerOrAdmin
 class CategoryListCreate(generics.ListCreateAPIView):
     queryset = Category.objects.all() # Que dato tengo que devolver
     serializer_class = CategoryListCreateSerializer # Como lo devuelvo
-    permission_classes = [IsAdminUser]
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]  # cualquier usuario puede ver
+        return [IsAdminUser()] 
 
 class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()

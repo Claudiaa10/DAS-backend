@@ -1,0 +1,22 @@
+# Ignorar entorno virtual
+venv/
+djangoServer/
+Lib/
+Scripts/
+Include/
+
+# Compilados de Python
+__pycache__/
+*.py[cod]
+
+# Archivos de base de datos locales
+*.sqlite3
+*.db
+
+# Archivos temporales de VSCode y otros IDEs
+.vscode/
+*.log
+
+# Otros
+.env
+.DS_Store

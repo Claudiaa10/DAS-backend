@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from auctions.models import Bid
-from auctions.serializers import BidSerializer
+from auctions.serializers import BidDetailSerializer
 
 
 class UserRegisterView(generics.CreateAPIView):
@@ -94,5 +94,5 @@ class UserBidListView(APIView):
 
     def get(self, request):
         user_bids = Bid.objects.filter(bidder=request.user).order_by("-amount")
-        serializer = BidSerializer(user_bids, many=True)
+        serializer = BidDetailSerializer(user_bids, many=True)
         return Response(serializer.data)

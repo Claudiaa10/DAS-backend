@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, status
 from .models import Category, Auction, Bid
-from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidSerializer
+from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
@@ -26,7 +26,7 @@ class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 class AuctionListCreate(generics.ListCreateAPIView):
     queryset = Auction.objects.all()
     serializer_class = AuctionListCreateSerializer
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [AllowAny] 
     def get_queryset(self):
         queryset = Auction.objects.all()
         params = self.request.query_params
@@ -79,7 +79,7 @@ class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AuctionDetailSerializer
 
 class BidListCreate(generics.ListCreateAPIView):
-    serializer_class = BidSerializer
+    serializer_class = BidListCreateSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -91,7 +91,7 @@ class BidListCreate(generics.ListCreateAPIView):
 
 
 class BidRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = BidSerializer
+    serializer_class = BidDetailSerializer
     permission_classes = [IsBidOwnerOrAdmin]
 
     def get_queryset(self):

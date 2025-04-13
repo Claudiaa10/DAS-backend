@@ -21,6 +21,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
     isOpen = serializers.SerializerMethodField(read_only=True)
     auctioneer_username = serializers.CharField(source='auctioneer.username', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
 
     class Meta:
         model = Auction

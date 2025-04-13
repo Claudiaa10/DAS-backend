@@ -18,14 +18,20 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
 
 class AuctionListCreateSerializer(serializers.ModelSerializer):
     creation_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
-    closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+    closing_date = serializers.DateTimeField(input_formats=["%Y-%m-%dT%H:%M"])
     isOpen = serializers.SerializerMethodField(read_only=True)
     auctioneer_username = serializers.CharField(source='auctioneer.username', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
+    thumbnail = serializers.URLField(required=False, allow_blank=True, allow_null=True)
+
 
     class Meta:
         model = Auction
-        fields = '__all__' 
+        fields = [
+        'id', 'title', 'description', 'creation_date', 'closing_date',
+        'thumbnail', 'price', 'stock', 'rating', 'brand', 'category',
+        'isOpen', 'auctioneer_username', 'category_name'
+        ]
     @extend_schema_field(serializers.BooleanField()) 
     def get_isOpen(self, obj):
         return obj.closing_date > timezone.now()
@@ -35,6 +41,11 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         if value - timezone.now() < timedelta(days=15):
             raise serializers.ValidationError("Closing date must be at least 15 days after creation date.")
         return value
+    def create(self, validated_data):
+        request = self.context.get('request')
+        validated_data['auctioneer'] = request.user
+        return super().create(validated_data)
+
 
 
 class AuctionDetailSerializer(serializers.ModelSerializer):

@@ -29,7 +29,7 @@ class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 class AuctionListCreate(generics.ListCreateAPIView):
     queryset = Auction.objects.all()
     serializer_class = AuctionListCreateSerializer
-    permission_classes = [AllowAny] 
+    permission_classes = [IsAuthenticated] 
     def get_queryset(self):
         queryset = Auction.objects.all()
         params = self.request.query_params

@@ -21,7 +21,7 @@ class Auction(models.Model):
     stock = models.IntegerField(validators=[MinValueValidator(1)])
     brand = models.CharField(max_length=100)
     category = models.ForeignKey(Category, related_name='auctions', on_delete=models.CASCADE)
-    thumbnail = models.URLField()
+    thumbnail = models.URLField(blank=True, null=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     closing_date = models.DateTimeField()
     auctioneer = models.ForeignKey(CustomUser, related_name='auctions', on_delete=models.CASCADE)

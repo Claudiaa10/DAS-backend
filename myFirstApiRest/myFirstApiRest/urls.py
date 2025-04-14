@@ -23,7 +23,6 @@ from django.http import JsonResponse
 def index(request):
     return JsonResponse({"mensaje": "Bienvenido a la API de subastas"})
 urlpatterns = [
-    path("/", index),
     path("api/auctions/", include("auctions.urls")),
     path("api/users/", include("users.urls")),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

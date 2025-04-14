@@ -9,4 +9,5 @@ urlpatterns = [
     path('<int:auction_id>/bid/', BidListCreate.as_view(), name='bid-list-create'),
     path('<int:auction_id>/bid/<int:pk>/', BidRetrieveUpdateDestroy.as_view(), name='bid-detail'),
     path('users/', UserAuctionListView.as_view(), name='action-from-users'),
+    path('myAuctions/',UserAuctionListView.as_view(),name ="user-auctions" )
 ]

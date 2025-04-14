@@ -29,7 +29,7 @@ class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 class AuctionListCreate(generics.ListCreateAPIView):
     queryset = Auction.objects.all()
     serializer_class = AuctionListCreateSerializer
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [AllowAny] 
     def get_queryset(self):
         queryset = Auction.objects.all()
         params = self.request.query_params
@@ -83,7 +83,11 @@ class AuctionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
 class BidListCreate(generics.ListCreateAPIView):
     serializer_class = BidListCreateSerializer
-    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         return Bid.objects.filter(auction_id=self.kwargs['auction_id'])
@@ -103,6 +107,7 @@ class BidRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
 class UserAuctionListView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = AuctionListCreateSerializer
     def get(self, request, *args, **kwargs):
     # Obtener las subastas del usuario autenticado
         user_auctions = Auction.objects.filter(auctioneer=request.user)

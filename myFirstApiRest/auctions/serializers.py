@@ -53,7 +53,7 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
     isOpen = serializers.SerializerMethodField(read_only=True)
     auctioneer_username = serializers.CharField(source='auctioneer.username', read_only=True)
-
+    category_name = serializers.CharField(source='category.name', read_only=True)
     class Meta:
         model = Auction
         fields = '__all__'
@@ -86,4 +86,4 @@ class BidDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bid
         fields = ['id', 'auction', 'price', 'creation_date', 'bidder','bidder_username']
-        read_only_fields = ['auction']
+        read_only_fields = ['auction','bidder']

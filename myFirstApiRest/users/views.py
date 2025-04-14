@@ -18,6 +18,7 @@ class UserRegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -39,6 +40,7 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
     def post(self, request):
         """Realiza el logout eliminando el RefreshToken (revocar)"""
         try:
@@ -57,13 +59,14 @@ class LogoutView(APIView):
         
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer = UserSerializer
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
     def patch(self, request):
         serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
-            print("DATA A GUARDAR:", serializer.validated_data)  # 👈 IMPRIMIR LO QUE SE VA A GUARDAR
+            print("DATA A GUARDAR:", serializer.validated_data)
             serializer.save()
             return Response(serializer.data)
         print("ERRORES:", serializer.errors)
@@ -75,6 +78,7 @@ class UserProfileView(APIView):
 
 
 class ChangePasswordView(APIView):
+    serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
@@ -93,8 +97,7 @@ class ChangePasswordView(APIView):
 
 class UserBidListView(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request):
-        user_bids = Bid.objects.filter(bidder=request.user).order_by("-amount")
+        user_bids = Bid.objects.filter(bidder=request.user).order_by("-price")
         serializer = BidDetailSerializer(user_bids, many=True)
         return Response(serializer.data)

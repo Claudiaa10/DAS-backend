@@ -1,0 +1,16 @@
+# Ignorar entornos virtuales y configuraciones locales
+.env
+
+# Base de datos SQLite (si es solo para desarrollo)
+*.sqlite3
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+
+# Carpetas de migraciones (si no quieres versionarlas)
+myFirstApiRest/**/migrations/
+
+# Proyecto Django compilado temporal
+myFirstApiRest/myFirstApiRest/
+djangoServer/

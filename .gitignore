@@ -1,16 +1,22 @@
-# Ignorar entornos virtuales y configuraciones locales
-.env
+# Ignorar entorno virtual
+venv/
+djangoServer/
+Lib/
+Scripts/
+Include/
 
-# Base de datos SQLite (si es solo para desarrollo)
-*.sqlite3
-
-# Archivos compilados de Python
+# Compilados de Python
 __pycache__/
 *.py[cod]
 
-# Carpetas de migraciones (si no quieres versionarlas)
-myFirstApiRest/**/migrations/
+# Archivos de base de datos locales
+*.sqlite3
+*.db
 
-# Proyecto Django compilado temporal
-myFirstApiRest/myFirstApiRest/
-djangoServer/
+# Archivos temporales de VSCode y otros IDEs
+.vscode/
+*.log
+
+# Otros
+.env
+.DS_Store

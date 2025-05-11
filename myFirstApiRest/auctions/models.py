@@ -54,3 +54,18 @@ class Rating(models.Model):
     def __str__(self):
         return f"Rating de {self.user} en {self.auction} con valor de {self.value}"
     
+    
+
+class Comment(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(CustomUser, related_name='comments', on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, related_name='comments', on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.user.username} en {self.auction.title}"

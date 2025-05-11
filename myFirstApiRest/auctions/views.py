@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, status
-from .models import Category, Auction, Bid,Rating
-from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, RatingListCreateSerializer
+from .models import Category, Auction, Bid, Rating, Comment
+from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, RatingListCreateSerializer, CommentSerializer
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
@@ -109,12 +109,30 @@ class UserAuctionListView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AuctionListCreateSerializer
     def get(self, request, *args, **kwargs):
-    # Obtener las subastas del usuario autenticado
         user_auctions = Auction.objects.filter(auctioneer=request.user)
         serializer = AuctionListCreateSerializer(user_auctions, many=True)
         return Response(serializer.data)
     
-# AÑADIR AQUI LA LOGICA DE MODIFICAR, ELIMINAR SUBASTA
-# AÑADIR EL CALCULO DE LA MEDIA
 
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        return Comment.objects.filter(auction_id=self.kwargs['auction_id'])
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, auction_id=self.kwargs['auction_id'])
+
+
+class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsOwnerOrAdmin]
+
+    def get_queryset(self):
+        return Comment.objects.filter(auction_id=self.kwargs['auction_id'])
 

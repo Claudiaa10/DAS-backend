@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, status
-from .models import Category, Auction, Bid
-from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer
+from .models import Category, Auction, Bid,Rating
+from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, RatingListCreateSerializer
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
@@ -113,4 +113,8 @@ class UserAuctionListView(APIView):
         user_auctions = Auction.objects.filter(auctioneer=request.user)
         serializer = AuctionListCreateSerializer(user_auctions, many=True)
         return Response(serializer.data)
+    
+# AÑADIR AQUI LA LOGICA DE MODIFICAR, ELIMINAR SUBASTA
+# AÑADIR EL CALCULO DE LA MEDIA
+
 

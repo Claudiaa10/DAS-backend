@@ -29,9 +29,10 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         model = Auction
         fields = [
         'id', 'title', 'description', 'creation_date', 'closing_date',
-        'thumbnail', 'price', 'stock', 'rating', 'brand', 'category',
+        'thumbnail', 'price', 'stock', 'brand', 'category',
         'isOpen', 'auctioneer_username', 'category_name'
         ]
+        read_only_fields = ['rating']
     @extend_schema_field(serializers.BooleanField()) 
     def get_isOpen(self, obj):
         return obj.closing_date > timezone.now()

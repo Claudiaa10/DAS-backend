@@ -17,7 +17,7 @@ class Auction(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     rating = models.DecimalField(max_digits=3, decimal_places=2, validators=[
-            MinValueValidator(1), MaxValueValidator(5)])
+            MinValueValidator(0), MaxValueValidator(5)],default=0)
     stock = models.IntegerField(validators=[MinValueValidator(1)])
     brand = models.CharField(max_length=100)
     category = models.ForeignKey(Category, related_name='auctions', on_delete=models.CASCADE)

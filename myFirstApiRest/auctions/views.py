@@ -182,19 +182,27 @@ class RatingListCreate(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         auction_id = self.kwargs['auction_id']
         value = serializer.validated_data['value']
-        # reemplazar si ya existe
         rating, created = Rating.objects.update_or_create(
             user=self.request.user,
             auction_id=auction_id,
             defaults={'value': value}
         )
-        # devolvemos el rating creado/actualizado
         self._rating_instance = rating
+        self.update_mean(auction_id)
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         serializer = self.get_serializer(self._rating_instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update_mean(self, auction_id):
+        auction = Auction.objects.get(pk=auction_id)
+        ratings = Rating.objects.filter(auction_id=auction_id)
+        avg = ratings.aggregate(Avg('value'))['value__avg']
+        auction.rating = round(avg, 2) if avg else 0
+        auction.save()
+        
+
 
 
 class RatingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -203,3 +211,28 @@ class RatingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Rating.objects.filter(auction_id=self.kwargs['auction_id'])
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self.update_mean(instance.auction_id)
+
+    def perform_destroy(self, instance):
+        auction_id = instance.auction_id
+        instance.delete()
+        self.update_mean(auction_id)
+
+    def update_mean(self, auction_id):
+        auction = Auction.objects.get(pk=auction_id)
+        avg = Rating.objects.filter(auction_id=auction_id).aggregate(Avg('value'))['value__avg']
+        auction.rating = round(avg, 2) if avg else 0
+        auction.save()
+
+class UserRatingDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, auction_id):
+        try:
+            rating = Rating.objects.get(user=request.user, auction_id=auction_id)
+            serializer = RatingListCreateSerializer(rating)
+            return Response(serializer.data, status=200)
+        except Rating.DoesNotExist:
+            return Response({"detail": "No rating found"}, status=404)

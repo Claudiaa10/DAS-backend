@@ -138,6 +138,16 @@ class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         return Comment.objects.filter(auction_id=self.kwargs['auction_id'])
 
 
+class UserCommentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        comments = Comment.objects.filter(user=user).order_by('-updated_at')
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+    
+
 # class RatingListCreate(generics.ListCreateAPIView):
 #     permission_classes = [IsAuthenticated]
 

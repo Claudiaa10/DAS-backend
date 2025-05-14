@@ -101,8 +101,16 @@ class RatingListCreateSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     user_username = serializers.CharField(source='user.username', read_only=True)
     auction_id = serializers.IntegerField(read_only=True)
+    auction_title = serializers.CharField(source='auction.title', read_only=True)
+    auction_price = serializers.DecimalField(source='auction.price', max_digits=10, decimal_places=2, read_only=True)
+    auction_category = serializers.CharField(source='auction.category.name', read_only=True)
+    auction_closing_date = serializers.CharField(source='auction.closing_date', read_only=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'user', 'user_username', 'auction', 'auction_id']
+        fields = [
+            'id', 'title', 'content', 'created_at', 'updated_at',
+            'user', 'user_username', 'auction', 'auction_id',
+            'auction_title', 'auction_price', 'auction_category', 'auction_closing_date'
+        ]
         read_only_fields = ['user', 'auction', 'created_at', 'updated_at']

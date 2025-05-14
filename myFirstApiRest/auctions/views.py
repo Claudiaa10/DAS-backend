@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
-from .permisions import IsOwnerOrAdmin, IsBidOwnerOrAdmin
+from .permisions import IsOwnerOrAdmin, IsBidOwnerOrAdmin, IsCommentOwnerOrAdmin
 from django.db.models import Avg
 from drf_spectacular.utils import extend_schema
 
@@ -130,8 +130,9 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
 
 class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsOwnerOrAdmin]
+    permission_classes = [IsCommentOwnerOrAdmin]
 
     def get_queryset(self):
         return Comment.objects.filter(auction_id=self.kwargs['auction_id'])

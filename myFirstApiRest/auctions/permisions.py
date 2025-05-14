@@ -22,3 +22,13 @@ class IsBidOwnerOrAdmin(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return obj.bidder == request.user or request.user.is_staff
+    
+    
+class IsCommentOwnerOrAdmin(BasePermission):
+    """
+    Permite editar/eliminar comentarios solo si el usuario es quien lo creó o admin.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.user == request.user or request.user.is_staff

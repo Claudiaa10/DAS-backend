@@ -45,8 +45,8 @@ class Bid(models.Model):
         return f"Puja de {self.bidder} por {self.price}€ en {self.auction.title}"
 
 class Rating(models.Model):
-    auction = models.ForeignKey(Auction, related_name="raating",on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser,related_name="rating",on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, related_name="ratings",on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser,related_name="ratings",on_delete=models.CASCADE)
     value = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     class Meta:
         unique_together = ("user","auction")

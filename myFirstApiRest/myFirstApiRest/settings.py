@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-k%-&#_jlzm%4=i%*hxaspvgm536sx5_twdlol06pk7ctlx!(ay
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'postgresql://db_digitalmariachis_user:wT0UJYCyD0ekW6DeTMagoJxz2zCSAwjx@dpg-cvtq0g1r0fns73duiqn0-a.oregon-postgres.render.com/db_digitalmariachis']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'postgresql://db_digitalmariachis_user:wT0UJYCyD0ekW6DeTMagoJxz2zCSAwjx@dpg-cvtq0g1r0fns73duiqn0-a.oregon-postgres.render.com/db_digitalmariachis','das-backend-1.onrender.com']
 
 
 # Application definition
@@ -92,20 +92,18 @@ WSGI_APPLICATION = 'myFirstApiRest.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-load_dotenv()
+# load_dotenv()
 # DATABASES = {
 #     'default': dj_database_url.config(default=os.getenv("DATABASE_URL"))
 #     }
 
+load_dotenv()
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
+    )
 }
-
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -155,6 +153,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ]
     }
 

@@ -18,7 +18,10 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
-# URLS
+from django.http import JsonResponse
+
+def index(request):
+    return JsonResponse({"mensaje": "Bienvenido a la API de subastas"})
 urlpatterns = [
     path("api/auctions/", include("auctions.urls")),
     path("api/users/", include("users.urls")),

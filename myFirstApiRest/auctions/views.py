@@ -1,15 +1,15 @@
 from django.shortcuts import render
 from rest_framework import generics, status
-from .models import Category, Auction, Bid
-from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer
+from .models import Category, Auction, Bid, Rating, Comment
+from .serializers import CategoryListCreateSerializer, CategoryDetailSerializer, AuctionListCreateSerializer, AuctionDetailSerializer, BidDetailSerializer, BidListCreateSerializer, RatingListCreateSerializer, CommentSerializer
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
-from .permisions import IsOwnerOrAdmin, IsBidOwnerOrAdmin
-
-
+from .permisions import IsOwnerOrAdmin, IsBidOwnerOrAdmin, IsCommentOwnerOrAdmin
+from django.db.models import Avg
+from drf_spectacular.utils import extend_schema
 
 
 
@@ -69,8 +69,17 @@ class AuctionListCreate(generics.ListCreateAPIView):
             queryset = queryset.filter(price__gte=price_min)  # Usamos 'price' en lugar de 'starting_price'
         if price_max:
             queryset = queryset.filter(price__lte=price_max)  # Usamos 'price' en lugar de 'starting_price'
+        
+        rating_min = params.get('rating', None)
+        if rating_min:
+            try:
+                rating_min = float(rating_min)
+                queryset = queryset.filter(rating__gte=rating_min)
+            except ValueError:
+                raise ValidationError({"rating": "Rating must be a number between 0 and 5."}, code=status.HTTP_400_BAD_REQUEST)
 
         return queryset
+
     
     def perform_create(self, serializer):
         serializer.save(auctioneer=self.request.user)
@@ -109,8 +118,108 @@ class UserAuctionListView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = AuctionListCreateSerializer
     def get(self, request, *args, **kwargs):
-    # Obtener las subastas del usuario autenticado
         user_auctions = Auction.objects.filter(auctioneer=request.user)
         serializer = AuctionListCreateSerializer(user_auctions, many=True)
         return Response(serializer.data)
+    
 
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        return Comment.objects.filter(auction_id=self.kwargs['auction_id'])
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, auction_id=self.kwargs['auction_id'])
+
+
+class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsCommentOwnerOrAdmin]
+
+    def get_queryset(self):
+        return Comment.objects.filter(auction_id=self.kwargs['auction_id'])
+
+
+class UserCommentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        comments = Comment.objects.filter(user=user).order_by('-updated_at')
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+    
+
+class RatingListCreate(generics.ListCreateAPIView):
+    serializer_class = RatingListCreateSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        return Rating.objects.filter(auction_id=self.kwargs['auction_id'])
+
+    def perform_create(self, serializer):
+        auction_id = self.kwargs['auction_id']
+        value = serializer.validated_data['value']
+        rating, created = Rating.objects.update_or_create(
+            user=self.request.user,
+            auction_id=auction_id,
+            defaults={'value': value}
+        )
+        self._rating_instance = rating
+        self.update_mean(auction_id)
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(self._rating_instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update_mean(self, auction_id):
+        auction = Auction.objects.get(pk=auction_id)
+        ratings = Rating.objects.filter(auction_id=auction_id)
+        avg = ratings.aggregate(Avg('value'))['value__avg']
+        auction.rating = round(avg, 2) if avg else 0
+        auction.save()
+        
+
+class RatingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = RatingListCreateSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+    def get_queryset(self):
+        return Rating.objects.filter(auction_id=self.kwargs['auction_id'])
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self.update_mean(instance.auction_id)
+
+    def perform_destroy(self, instance):
+        auction_id = instance.auction_id
+        instance.delete()
+        self.update_mean(auction_id)
+
+    def update_mean(self, auction_id):
+        auction = Auction.objects.get(pk=auction_id)
+        avg = Rating.objects.filter(auction_id=auction_id).aggregate(Avg('value'))['value__avg']
+        auction.rating = round(avg, 2) if avg else 0
+        auction.save()
+
+class UserRatingDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, auction_id):
+        try:
+            rating = Rating.objects.get(user=request.user, auction_id=auction_id)
+            serializer = RatingListCreateSerializer(rating)
+            return Response(serializer.data, status=200)
+        except Rating.DoesNotExist:
+            return Response({"detail": "No rating found"}, status=404)

@@ -30,7 +30,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
         fields = [
         'id', 'title', 'description', 'creation_date', 'closing_date',
         'thumbnail', 'price', 'stock', 'brand', 'category',
-        'isOpen', 'auctioneer_username', 'category_name'
+        'isOpen', 'auctioneer_username', 'category_name','rating'
         ]
         read_only_fields = ['rating']
     @extend_schema_field(serializers.BooleanField()) 

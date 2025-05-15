@@ -69,8 +69,17 @@ class AuctionListCreate(generics.ListCreateAPIView):
             queryset = queryset.filter(price__gte=price_min)  # Usamos 'price' en lugar de 'starting_price'
         if price_max:
             queryset = queryset.filter(price__lte=price_max)  # Usamos 'price' en lugar de 'starting_price'
+        
+        rating_min = params.get('rating', None)
+        if rating_min:
+            try:
+                rating_min = float(rating_min)
+                queryset = queryset.filter(rating__gte=rating_min)
+            except ValueError:
+                raise ValidationError({"rating": "Rating must be a number between 0 and 5."}, code=status.HTTP_400_BAD_REQUEST)
 
         return queryset
+
     
     def perform_create(self, serializer):
         serializer.save(auctioneer=self.request.user)
@@ -148,37 +157,6 @@ class UserCommentsView(APIView):
         return Response(serializer.data)
     
 
-# class RatingListCreate(generics.ListCreateAPIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request, auction_id):
-#         ratings = Rating.objects.filter(auction_id=auction_id)
-#         avg = ratings.aggregate(avg=Avg('value'))['avg']
-#         return Response({"average_rating": round(avg, 2) if avg else None})
-    
-#     @extend_schema(request=RatingListCreateSerializer) 
-#     def post(self, request, auction_id):
-#         data = request.data.copy()
-#         data['auction'] = auction_id  # asignamos la subasta al cuerpo del request
-#         serializer = RatingListCreateSerializer(data=data, context={'request': request})
-#         serializer.is_valid(raise_exception=True)
-
-#         rating, created = Rating.objects.update_or_create(
-#             user=request.user,
-#             auction_id=auction_id,
-#             defaults={'value': serializer.validated_data['value']}
-#         )
-
-#         return Response(RatingListCreateSerializer(rating).data, status=201 if created else 200)
-
-
-#     def delete(self, request, auction_id):
-#         try:
-#             rating = Rating.objects.get(user=request.user, auction_id=auction_id)
-#             rating.delete()
-#             return Response(status=204)
-#         except Rating.DoesNotExist:
-#             return Response({"detail": "Rating not found."}, status=404)
 class RatingListCreate(generics.ListCreateAPIView):
     serializer_class = RatingListCreateSerializer
 
@@ -213,8 +191,6 @@ class RatingListCreate(generics.ListCreateAPIView):
         auction.rating = round(avg, 2) if avg else 0
         auction.save()
         
-
-
 
 class RatingRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RatingListCreateSerializer
